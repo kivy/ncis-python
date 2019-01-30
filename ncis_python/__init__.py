@@ -2,6 +2,7 @@ from ncis import route, api_response, request, ncis_weakrefs
 import sys
 import platform
 import inspect
+import gc
 
 __version__ = "0.1"
 __author__ = "Mathieu Virbel <mat@kivy.org>"
@@ -66,3 +67,31 @@ def _inspect(refid):
         import traceback; traceback.print_exc()
         ncis_weakrefs.pop(refid, None)
         return api_response(None)
+
+@route("/gc")
+def gc_state():
+    return api_response({
+        "enabled": gc.isenabled()
+    })
+
+
+@route("/gc/enable")
+def gc_enable():
+    gc.enable()
+    return api_response()
+
+
+@route("/gc/disable")
+def gc_disable():
+    gc.disable()
+    return api_response()
+
+
+@route("/gc/stats")
+def gc_stats():
+    return api_response(gc.stats())
+
+
+@route("/gc/counts")
+def gc_count():
+    return api_response(gc.count())
