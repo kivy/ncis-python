@@ -1,4 +1,5 @@
 from ncis import route, api_response, request, ncis_weakrefs
+from bottle import abort
 import sys
 import platform
 import inspect
@@ -46,6 +47,8 @@ def _exec():
 @route("/eval", method="POST")
 def _eval():
     cmd = request.forms.get("cmd")
+    if cmd is None:
+        abort(500, "cmd is empty")
     result = eval(cmd, globals(), globals())
     return api_response(result)
 
