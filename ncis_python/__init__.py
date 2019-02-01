@@ -1,5 +1,4 @@
-from ncis import route, api_response, request, ncis_weakrefs
-from bottle import abort
+from ncis import route, api_response, api_error, request, ncis_weakrefs
 import sys
 import platform
 import inspect
@@ -37,23 +36,23 @@ def modules():
     return api_response(list(sys.modules.keys()))
 
 
-@route("/exec", method="POST")
+@route("/exec", methods=["POST"])
 def _exec():
-    cmd = request.forms.get("cmd")
+    cmd = request.form.get("cmd")
     exec(cmd, globals(), globals())
     return api_response()
 
 
-@route("/eval", method="POST")
+@route("/eval", methods=["POST"])
 def _eval():
-    cmd = request.forms.get("cmd")
+    cmd = request.form.get("cmd")
     if cmd is None:
-        abort(500, "cmd is empty")
+        return api_error("cmd is empty")
     result = eval(cmd, globals(), globals())
     return api_response(result)
 
 
-@route("/inspect/<refid>", method="GET")
+@route("/inspect/<refid>", methods=["GET"])
 def _inspect(refid):
     refid = int(refid)
     try:
@@ -70,6 +69,20 @@ def _inspect(refid):
         import traceback; traceback.print_exc()
         ncis_weakrefs.pop(refid, None)
         return api_response(None)
+
+
+@route("/inspect", methods=["POST"])
+def _inspect_by_eval():
+    cmd = request.form.get("cmd")
+    if not cmd:
+        return api_error("cmd is empty")
+    try:
+        obj = eval(cmd, globals(), globals())
+        return api_response(inspect.getmembers(obj))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return api_response(None)
+
 
 @route("/gc")
 def gc_state():
