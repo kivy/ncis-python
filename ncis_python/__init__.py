@@ -39,15 +39,20 @@ def modules():
 @route("/exec", methods=["POST"])
 def _exec():
     cmd = request.form.get("cmd")
-    exec(cmd, globals(), globals())
-    return api_response()
+    if not cmd:
+        return api_response(None)
+    try:
+        exec(cmd, globals(), globals())
+        return api_response()
+    except Exception as e:
+        return api_error(repr(e))
 
 
 @route("/eval", methods=["POST"])
 def _eval():
     cmd = request.form.get("cmd")
-    if cmd is None:
-        return api_error("cmd is empty")
+    if not cmd:
+        return api_response(None)
     try:
         result = eval(cmd, globals(), globals())
         return api_response(result)
