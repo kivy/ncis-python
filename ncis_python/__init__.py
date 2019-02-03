@@ -48,8 +48,11 @@ def _eval():
     cmd = request.form.get("cmd")
     if cmd is None:
         return api_error("cmd is empty")
-    result = eval(cmd, globals(), globals())
-    return api_response(result)
+    try:
+        result = eval(cmd, globals(), globals())
+        return api_response(result)
+    except Exception as e:
+        return api_error(repr(e))
 
 
 @route("/inspect/<refid>", methods=["GET"])
